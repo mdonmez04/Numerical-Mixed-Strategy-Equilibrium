@@ -152,7 +152,8 @@ class BinaryActions01:
     """
 
     def discretize(self, points):
-        
+        if int(points) != 2:
+            raise ValueError("BinaryActions01 requires exactly 2 support points")
         return jnp.array([0.0, 1.0])
 
     def reparameterize(self, x):
@@ -411,11 +412,11 @@ class AlwayspHone:
             uH = uL + (1.0 - uL) * g
             pL = self.r * uL
             pH = self.r * uH
-            self._plot_1d_cdf(pL, weight, title="Player 0 (pL)")
-            self._plot_1d_cdf(pH, weight, title="Player 0 (pH)")
+            self._plot_1d_cdf(player, pL, weight, title="Player 0 (pL)")
+            self._plot_1d_cdf(player, pH, weight, title="Player 0 (pH)")
         elif player == 1:
             pI = self.r * support
-            self._plot_1d_cdf(pI, weight, title="Player 1 (pI)")
+            self._plot_1d_cdf(player, pI, weight, title="Player 1 (pI)")
         elif player == 2:
             # support = [0,1] where 0=I,1=M; weights = [alpha, 1-alpha]
             fig, ax = plt.subplots()
@@ -427,7 +428,7 @@ class AlwayspHone:
         else:
             raise ValueError("bad player index")
 
-    def _plot_1d_cdf(self, prices, weight, title):
+    def _plot_1d_cdf(self, player, prices, weight, title):
         order = prices.argsort()
         sorted_support = prices[order]
         learned_cdf = weight[order].cumsum()
@@ -435,7 +436,7 @@ class AlwayspHone:
         fig, ax = plt.subplots()
         ax.step(sorted_support, learned_cdf, where="post", label="learned CDF")
 
-        grid, theor_cdf = self.get_theoretical_cdf(player=0)
+        grid, theor_cdf = self.get_theoretical_cdf(player=player)
         ax.plot(grid, theor_cdf, linestyle="--", label=f"theoretical CDF ({self.pricing_region()})")
 
         ax.set(title=title, xlabel="price", ylabel="cum prob")
